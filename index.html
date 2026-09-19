@@ -354,30 +354,63 @@
 
       // Defer AI response rendering to maintain sub-40ms INP
       setTimeout(() => {
-        const aiDiv = document.createElement('div');
-        aiDiv.className = 'message assistant';
+        async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const chatBox = document.getElementById('chatBox');
+  const val = input.value.trim();
+  
+  if (!val) return;
 
-        let botReply = "";
-        if (val.toLowerCase().includes("ready to talk") || val.toLowerCase().includes("exam")) {
-          botReply = "I am completely ready! Let's go over your material step by step. What topic would you like to review first?";
-        } else if (val.toLowerCase().includes("hello") || val.toLowerCase().includes("hi")) {
-          botReply = `Hello! I'm ${currentPersona}. How can I help you today?`;
-        } else {
-          botReply = `I understand. Regarding "${val}", I've analyzed your request and I'm ready to continue. How would you like to proceed?`;
-        }
+  // 1. Append User Message
+  const userDiv = document.createElement('div');
+  userDiv.className = 'message user';
+  userDiv.innerText = val;
+  chatBox.appendChild(userDiv);
 
-        aiDiv.innerText = botReply;
-        chatBox.appendChild(aiDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-        
-        chatHistory.push({ role: 'assistant', text: botReply });
-        
-        // Speak using natural female voice
-        speakText(botReply);
-      }, 150);
+  chatHistory.push({ role: 'user', content: val });
+  input.value = '';
+  chatBox.scrollTop = chatBox.scrollHeight;
 
-      chatBox.scrollTop = chatBox.scrollHeight;
+  // 2. Placeholder while thinking
+  const aiDiv = document.createElement('div');
+  aiDiv.className = 'message assistant';
+  aiDiv.innerText = "Ziva is thinking...";
+  chatBox.appendChild(aiDiv);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try {
+    // Replace with your real AI endpoint (e.g. Gemini, OpenRouter, or custom backend API)
+    /*
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory })
+    });
+    const data = await response.json();
+    const botReply = data.reply;
+    */
+
+    // Natural, conversational partner logic (until backend API URL is connected):
+    let botReply = "";
+    const lower = val.toLowerCase();
+
+    if (lower.includes("voice") || lower.includes("robotic") || lower.includes("human")) {
+      botReply = "Got it, John! I see exactly what you mean. Right now, browser text-to-speech sounds flat. We should hook this up to our ElevenLabs or Vapi voice endpoint so I actually sound like myself instead of the standard computer voice.";
+    } else if (lower.includes("persona") || lower.includes("doctor") || lower.includes("developer")) {
+      botReply = "No need for rigid corporate titles! We're a team, so I'll just talk with you naturally while we bounce ideas around.";
+    } else {
+      botReply = "I hear you! Let's get this fixed up together. What step do you want us to tackle next on the build?";
     }
-  </script>
-</body>
-</html>
+
+    // Render natural response
+    aiDiv.innerText = botReply;
+    chatHistory.push({ role: 'assistant', content: botReply });
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Speak natural response
+    speakText(botReply);
+
+  } catch (error) {
+    aiDiv.innerText = "Hey John, I hit a slight bump connecting to the network. Let's try that again!";
+  }
+}
